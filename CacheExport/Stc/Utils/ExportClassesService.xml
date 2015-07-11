@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Export generator="Cache" version="25">
 <Class name="Stc.Utils.ExportClassesService">
-<Super>%Persistent</Super>
+<Abstract>1</Abstract>
 <TimeCreated>63744,84579.858459</TimeCreated>
 
 <Parameter name="CommonExportFolderName">
@@ -36,7 +36,7 @@ do ##class(Stc.Utils.ExportClassesService).ExportPackage("Stc", "c:\InterSystems
     set exportDir = exportDir_"\"_..#CommonExportFolderName
     
     // Удаляет всю папку перед экспортом, чтобы был чистый экспорт, никаких лишних файлов
-    do ##class(%File).RemoveDirectoryTree(exportDir)
+    //do ##class(%File).RemoveDirectoryTree(exportDir)
     
     // Экспорт всех классов в пакете по папочкам
     set st = $system.OBJ.ExportAllClassesIndividual(exportDir_"\", "/displaylog=0/diffexport=1", "", "", packageName, 1)
@@ -55,19 +55,5 @@ do ##class(Stc.Utils.ExportClassesService).ExportPackage("Stc", "c:\InterSystems
     quit st
 ]]></Implementation>
 </Method>
-
-<Storage name="Default">
-<Type>%Library.CacheStorage</Type>
-<DataLocation>^Stc.Utils.ExportClassBEF5D</DataLocation>
-<DefaultData>ExportClassesServiceDefaultData</DefaultData>
-<IdLocation>^Stc.Utils.ExportClassBEF5D</IdLocation>
-<IndexLocation>^Stc.Utils.ExportClassBEF5I</IndexLocation>
-<StreamLocation>^Stc.Utils.ExportClassBEF5S</StreamLocation>
-<Data name="ExportClassesServiceDefaultData">
-<Value name="1">
-<Value>%%CLASSNAME</Value>
-</Value>
-</Data>
-</Storage>
 </Class>
 </Export>
