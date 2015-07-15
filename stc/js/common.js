@@ -71,5 +71,5 @@ StcAppSetting.getLang = function(){
     }
     */
     
-    return 'ru-RU';
+    return 'en-US';
 }  

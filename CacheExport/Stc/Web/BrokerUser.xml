@@ -66,6 +66,13 @@ Public request processor for users</Description>
     <Route Method="POST" Url="/json/mailing/subscription/confirmation/:code" Call="Stc.Web.JsonUser:ConfirmMailingSubscription"/>
     
     <!-- ================================================================================================================================== -->
+    <!-- FEEDBACK                                                                                                                  FEEDBACK -->
+    <!-- ================================================================================================================================== -->
+    
+    <!-- Get feedback template for fill data -->
+    <Route Method="GET" Url="/json/feedback/template" Call="Stc.Web.JsonUser:GetFeedBackTemplateForFill"/>
+    
+    <!-- ================================================================================================================================== -->
     <!-- OTHER                                                                                                                        OTHER -->
     <!-- ================================================================================================================================== -->
     

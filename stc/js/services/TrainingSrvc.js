@@ -161,6 +161,9 @@ servicesModule.factory('TrainingSrvc', function(DALSrvc, $filter) {
         saveFeedBack: function(data, trId, code){
             return DALSrvc.getPromise('save', StcAppSetting.user + '/json/training/' + trId + '/feedback/' + code, data);
         },
+        getFeedBackTemplate:function(){
+            return DALSrvc.getPromise('get', StcAppSetting.user + '/json/feedback/template', null);
+        },
         /* All training feedbacks */
         getFeedBacksForGrid: function(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText, trainingId){
             var first = pageSize * (pageCurr - 1) + 1;

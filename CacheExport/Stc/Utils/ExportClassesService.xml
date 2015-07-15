@@ -35,8 +35,8 @@ do ##class(Stc.Utils.ExportClassesService).ExportPackage("Stc", "c:\InterSystems
     
     set exportDir = exportDir_"\"_..#CommonExportFolderName
     
-    // Удаляет всю папку перед экспортом, чтобы был чистый экспорт, никаких лишних файлов
-    //do ##class(%File).RemoveDirectoryTree(exportDir)
+    // Удаляем папку - пакет с классами. Чтобы ничего лищнего в ней не осталось после прошлого экспорта
+    do ##class(%File).RemoveDirectoryTree(exportDir_"\"_packageName)
     
     // Экспорт всех классов в пакете по папочкам
     set st = $system.OBJ.ExportAllClassesIndividual(exportDir_"\", "/displaylog=0/diffexport=1", "", "", packageName, 1)

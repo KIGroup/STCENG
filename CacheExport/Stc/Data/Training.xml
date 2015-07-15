@@ -737,7 +737,7 @@ Get teacher payout for training</Description>
     if (y2 > 1.25) set y2 = 1.25
     
     // 3. Средняя оценка по курсу (отзывы)
-    &sql(SELECT ROUND(AVG(Rating), 2) INTO :y3 
+    &sql(SELECT ROUND(AVG(AvgInstructorRating), 2) INTO :y3 
          FROM Stc_Data.FeedBack 
          WHERE Training <> :trainingId AND 
                Training->Course = :trCourseId AND 
