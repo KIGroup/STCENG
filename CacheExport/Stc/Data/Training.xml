@@ -302,6 +302,7 @@ Convert to proxyObject (for JSON)</Description>
 <Implementation><![CDATA[
     set proxy = ##class(%ZEN.proxyObject).%New()
     set proxy.id = ..%Id()
+    set proxy.isLoaded = $$$YES
     set proxy.accessCode = ..AccessCode
     set proxy.event = ..CalendarEvent
     set proxy.city = ..City.ConvertToProxyObject()
@@ -388,7 +389,7 @@ Create or save modified training</Description>
     "; OtherInfo="_$ZCONVERT(data.otherInfo, "I","UTF8")_
     "; Payout="_data.payout)
     
-    if (data.id = ""){
+    if (..%ExistsId(data.id) = $$$NO){
         set tr = ..%New()
         set tr.CreatedTS = $ZDT($ZTS, 3)
         set tr.CuratorFullName = ##class(Stc.Data.Localization.LText).Create($ZCONVERT(data.curator.fullName, "I","UTF8"),"Stc.Data.Localization.Translation;PersonLTextValue")

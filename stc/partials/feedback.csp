@@ -35,7 +35,7 @@
                     </div>        
             </accordion-group>
             <br>
-            <accordion-group is-open="true" heading="{{'Review of the course (instructor nonspecific)'|localize}}" ng-hide="$parent.page.hide">
+            <accordion-group is-open="true" heading="{{'Review of the course'|localize}}" ng-hide="$parent.page.hide">
                    <div ng-repeat="item in page.feedBack.items| filter: {groupTypeCode: 'Instructor Nonspecific'}">
                         <div style="padding-bottom: 17px;" ng-show="item.type.isScaleType==1">
                             <label class="control-label" style="display: inline;" ng-bind="'• ' + item.type.name"></label>

@@ -841,7 +841,11 @@ Method="POST" Url="/json/training"</Description>
             set isNew = $$$YES
             do ##class(Stc.Data.MailingTrainingGroup).CreateAll(tr)
         }
-
+        
+        set proxy = ##class(%ZEN.proxyObject).%New()
+        set proxy.id = tr.%Id()
+        do proxy.%ToJSON()
+        
         TCOMMIT
     }
     catch ex {

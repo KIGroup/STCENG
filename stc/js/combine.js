@@ -1,11 +1,11 @@
-// Combine date time is 28.06.2015 22:43:41
+// Combine date time is 15.07.2015 21:53:23
 
 
 // ===============================================================================================================================
 // File: 1. controllers/MainCtrl.js
 // ===============================================================================================================================
 'use strict';
-//ddddddddвddd
+//ddddddddвdd
 
 /*===========================================================================================
 Главный контроллер, работа с языком и меню
@@ -197,9 +197,9 @@ controllersModule.controller('ScheduleFrameCtrl', function($scope, $window, $fil
                             training.curatorInfo += ', ' + training.curator.phone;
                         }
 
-                        if (training.curator.email != ""){
-                            training.curatorInfo += ', ' + training.curator.email;
-                        }
+                        //if (training.curator.email != ""){
+                        //    training.curatorInfo += ', ' + training.curator.email;
+                        //}
     
                         training.urlJoin = 'http://' + host_appName + '/stc/index.csp#/training/' + training.id + '/order';
                         training.urlAddGoogleCalendarEvent = TrainingSrvc.getUrlForCreateGoogleCalendarEvent(
@@ -345,21 +345,16 @@ controllersModule.controller('TrainingCtrl', function($scope, $route, $location,
 
         //============================== ОТЗЫВЫ =======================================================================================
         $scope.feedBack.columns = [
-                          {name: 'Оценка', sqlName: 'Rating', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: false, captionStyle: {textAlign: 'center', width: '50px'}},
-                          {name: 'Автор', sqlName: 'Author', isSorted: false, isSortable: true, isDown: true, isSearched: true, isSearchable: true},
-                          {name: 'Понравилось', sqlName: 'WhatLiked', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: false},
-                          {name: 'Улучшения', sqlName: 'WhatImprovements', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: false},
-                          {name: 'Дополнение', sqlName: 'WhatHear', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: false},
-                          {name: 'О докладчике', sqlName: 'AboutTeacher', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: true},
+                          {name: 'Автор', sqlName: 'Author', isSorted: false, isSortable: true, isDown: true, isSearched: true, isSearchable: false, captionStyle: {textAlign: 'center', width: '200px'}},
+                          {name: 'Avg. course rating', sqlName: 'AvgCourseRating', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: false, captionStyle: {textAlign: 'center'}},
+                          {name: 'Avg. instructor rating', sqlName: 'AvgInstructorRating', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: true, captionStyle: {textAlign: 'center'}},
                           {name: 'Дата создания', sqlName: 'CreatedTS', isSorted: true, isSortable: true, isDown: false, isSearched: false, isSearchable: false, filter: 'date', captionStyle: {width: '180px'}}];
  
-        $scope.feedBack.properties = [{name:'rating', cellStyle: {textAlign: 'center'}}, 
+        $scope.feedBack.properties = [
                                      {name: 'author'},
-                                     {name:'whatLikedStatus',        calculate: function(item){ item.whatLikedStatus       = item.whatLiked       =='' ? '' : $filter('localize')('Есть отзыв')}},
-                                     {name:'whatImprovementsStatus', calculate: function(item){ item.whatImprovementsStatus= item.whatImprovements=='' ? '' : $filter('localize')('Есть отзыв')}},
-                                     {name:'whatHearStatus',         calculate: function(item){ item.whatHearStatus        = item.whatHear        =='' ? '' : $filter('localize')('Есть отзыв')}},
-                                     {name:'aboutTeacherStatus',     calculate: function(item){ item.aboutTeacherStatus    = item.aboutTeacher    =='' ? '' : $filter('localize')('Есть отзыв')}},
-                                     {name:'createdTS', filter: 'date', filterParam: $filter('localize')('d MMMM y, HH:mm:ss')}];
+                                     {name: 'avgCourseRating', cellStyle: {textAlign: 'center'}}, 
+                                     {name: 'avgInstructorRating', cellStyle: {textAlign: 'center'}},
+                                     {name: 'createdTS', filter: 'date', filterParam: $filter('localize')('d MMMM y, HH:mm:ss')}];
 
         $scope.feedBack.pageSize = UtilsSrvc.getPropertyValue($scope.pageStore, 'feedBack.grid.pageSize', 10);
         $scope.feedBack.pageCurr = UtilsSrvc.getPropertyValue($scope.pageStore, 'feedBack.grid.pageCurr', 1);
@@ -3534,6 +3529,7 @@ controllersModule.controller('FeedBackCtrl', function($scope, $filter, $routePar
     
     $scope.page.init = function(){
         $scope.page.loadTraining();
+        $scope.page.loadFeedbackTemplate();
     };
 
     /* Подгрузить обучение */
@@ -3546,9 +3542,23 @@ controllersModule.controller('FeedBackCtrl', function($scope, $filter, $routePar
                 $scope.page.alert = UtilsSrvc.getAlert('Внимание!', response.data, 'error', true);
             }); 
     };
+    
+    /* Подгрузить шаблон отзыва */
+    $scope.page.loadFeedbackTemplate = function(){
+        TrainingSrvc.getFeedBackTemplate().then(
+            function(data){
+                $scope.page.feedBack = data;
+            },
+            function(response){
+                $scope.page.alert = UtilsSrvc.getAlert('Внимание!', response.data, 'error', true);
+            }); 
+    };
 
     // Save feedback
     $scope.page.submit = function(){
+        if (!$scope.page.allRatingsAreFilled)
+            return;
+        
         TrainingSrvc.saveFeedBack($scope.page.feedBack, $routeParams.id, $routeParams.code).then(
             function(data){
                 $scope.page.hide = true;
@@ -3557,6 +3567,19 @@ controllersModule.controller('FeedBackCtrl', function($scope, $filter, $routePar
             function(response){
                 $scope.page.alert = UtilsSrvc.getAlert('Внимание!', response.data, 'error', true);
             });        
+    };
+    
+    $scope.page.allRatingsAreFilled = function(){
+        if (!$scope.page.feedBack || !$scope.page.feedBack.items)
+            return true;
+        
+        for(var i=0; i < $scope.page.feedBack.items.length; i++){
+            var item = $scope.page.feedBack.items[i];
+            if (item.type.isRequired == 1 && item.type.isScaleType == 1 && item.scaleValue == 0)
+                return false; // не заполнили все рейтинги!
+        }
+        
+        return true;
     };
 
     $scope.page.init();
@@ -5123,6 +5146,9 @@ servicesModule.factory('TrainingSrvc', function(DALSrvc, $filter) {
         },
         saveFeedBack: function(data, trId, code){
             return DALSrvc.getPromise('save', StcAppSetting.user + '/json/training/' + trId + '/feedback/' + code, data);
+        },
+        getFeedBackTemplate:function(){
+            return DALSrvc.getPromise('get', StcAppSetting.user + '/json/feedback/template', null);
         },
         /* All training feedbacks */
         getFeedBacksForGrid: function(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText, trainingId){

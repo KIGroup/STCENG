@@ -24,8 +24,8 @@
                         <i class="icon-refresh" style="font-size: 12px"></i>
                     </label>
                     <div class="controls">
-                        <input class="span6" type="text" ng-model="training.payout" required></input>
-                        <input class="span6" type="text" ng-model="training.cost.currency.name" disabled></input>
+                        <input class="span6" type="text" ng-model="training.payout" ng-required="training.id" ng-disabled="!training.id"></input>
+                        <input class="span6" type="text" ng-model="training.cost.currency.code" disabled></input>
                     </div>
                 </div>
             </div>

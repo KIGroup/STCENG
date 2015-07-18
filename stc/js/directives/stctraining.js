@@ -36,8 +36,8 @@ directivesModule.directive('stctraining', function(){
                 $scope.loadCourses();
             };
 
-            $scope.$watch('training.id', function(){
-                if ($scope.training && $scope.training.id){
+            $scope.$watch('training.isLoaded', function(){
+                if ($scope.training && $scope.training.isLoaded){
                     $scope.yandex.results.push($scope.training.address);
                     $scope.addressCheck(false, true, false);
                 }
