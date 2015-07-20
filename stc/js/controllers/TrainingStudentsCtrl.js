@@ -47,13 +47,13 @@ controllersModule.controller('TrainingStudentsCtrl', function($scope, $location,
 		
 		// Students
 		$scope.page.studTable.columns = [
-                          {name: 'Фамилия',       sqlName: 'Students->LastName->Value',           isSorted: false, isSortable: true, isDown: true,  isSearched: true,   isSearchable: true},
-                          {name: 'Имя',           sqlName: 'Students->FirstName->Value',          isSorted: false, isSortable: true, isDown: true,  isSearched: false,  isSearchable: false},
-                          {name: 'Отчество',      sqlName: 'Students->MiddleName->Value',         isSorted: false, isSortable: true, isDown: true,  isSearched: false,  isSearchable: false},
-                          {name: 'Организация',      sqlName: 'Students->Company->ShortName->Value', isSorted: true,  isSortable: true, isDown: true,  isSearched: false,  isSearchable: true},
-                          {name: 'Email',         sqlName: 'Students->Email',                     isSorted: false, isSortable: true, isDown: true,  isSearched: false,  isSearchable: true},
-                          {name: 'Телефон',       sqlName: 'Students->Phone',                     isSorted: false, isSortable: true, isDown: true,  isSearched: false,  isSearchable: true},
-                          {name: 'Skype',         sqlName: 'Students->Skype',                     isSorted: false, isSortable: true, isDown: true,  isSearched: false,  isSearchable: false}];
+                          {name: 'Фамилия',       sqlName: 'Student->LastName->Value',           isSorted: false, isSortable: true, isDown: true,  isSearched: true,   isSearchable: true},
+                          {name: 'Имя',           sqlName: 'Student->FirstName->Value',          isSorted: false, isSortable: true, isDown: true,  isSearched: false,  isSearchable: false},
+                          {name: 'Отчество',      sqlName: 'Student->MiddleName->Value',         isSorted: false, isSortable: true, isDown: true,  isSearched: false,  isSearchable: false},
+                          {name: 'Организация',      sqlName: 'Student->Company->ShortName->Value', isSorted: true,  isSortable: true, isDown: true,  isSearched: false,  isSearchable: true},
+                          {name: 'Email',         sqlName: 'Student->Email',                     isSorted: false, isSortable: true, isDown: true,  isSearched: false,  isSearchable: true},
+                          {name: 'Телефон',       sqlName: 'Student->Phone',                     isSorted: false, isSortable: true, isDown: true,  isSearched: false,  isSearchable: true},
+                          {name: 'Skype',         sqlName: 'Student->Skype',                     isSorted: false, isSortable: true, isDown: true,  isSearched: false,  isSearchable: false}];
 
         $scope.page.studTable.properties = [{name:'lastName'}, {name:'firstName'}, {name:'middleName'}, {name:'company.shortName'}, {name:'email'}, {name:'phone'}, {name:'skype'}];
         $scope.page.studTable.pageSize = 20;

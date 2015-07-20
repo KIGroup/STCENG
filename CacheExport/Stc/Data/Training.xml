@@ -226,6 +226,13 @@ Is public training or not (shows in calendar)</Description>
 <Parameter name="MAXLEN" value="500"/>
 </Property>
 
+<Property name="StudentsCount">
+<Type>%Integer</Type>
+<Calculated>1</Calculated>
+<SqlComputeCode>set {StudentsCount} = ##class({%%CLASSNAME}).GetStudentsCount({%%ID})</SqlComputeCode>
+<SqlComputed>1</SqlComputed>
+</Property>
+
 <Index name="AccessCodeIdx">
 <Properties>AccessCode</Properties>
 <Unique>1</Unique>
@@ -314,9 +321,25 @@ Convert to proxyObject (for JSON)</Description>
     set proxy.isCertificatesDone = ..IsCertificatesDone
     set proxy.isPublic = ..IsPublic
     
-    set proxy.timeStart = $e(##class(%Library.Time).LogicalToDisplay(..TimeStart), 1, 5)
-    set proxy.timeFinish = $e(##class(%Library.Time).LogicalToDisplay(..TimeFinish), 1, 5)
-    set proxy.timeStartFinish = proxy.timeStart_" - "_proxy.timeFinish
+    if (..TimeStart > ##class(%Library.Time).DisplayToLogical("12:00")){
+        set proxy.timeStart = $e(##class(%Library.Time).LogicalToDisplay(..TimeStart - ##class(%Library.Time).DisplayToLogical("12:00")), 1, 5)
+        set proxy.timeStartType = "p.m."
+    }
+    else{
+        set proxy.timeStart = $e(##class(%Library.Time).LogicalToDisplay(..TimeStart), 1, 5)
+        set proxy.timeStartType = "a.m."
+    }
+    
+    if (..TimeFinish > ##class(%Library.Time).DisplayToLogical("12:00")){
+        set proxy.timeFinish = $e(##class(%Library.Time).LogicalToDisplay(..TimeFinish - ##class(%Library.Time).DisplayToLogical("12:00")), 1, 5)
+        set proxy.timeFinishType = "p.m."
+    }
+    else{
+        set proxy.timeFinish = $e(##class(%Library.Time).LogicalToDisplay(..TimeFinish), 1, 5)
+        set proxy.timeFinishType = "a.m."
+    }
+
+    set proxy.timeStartFinish = proxy.timeStart_" "_proxy.timeStartType_" - "_proxy.timeFinish_" "_proxy.timeFinishType
     
     set proxy.otherInfo = ..OtherInfo.Value
     set proxy.room = ..Room
@@ -346,15 +369,7 @@ Convert to proxyObject (for JSON)</Description>
     
     set proxy.newStudents = ..NewStudents.Count()
     set proxy.sgroups = ..SubGroups.Count()
-    set proxy.students = 0
-
-    set key = ""
-    for i=1:1:..SubGroups.Count(){
-        set key = ..SubGroups.Next(key)
-        set sgroup = ..SubGroups.GetAt(key)
-        
-        set proxy.students = proxy.students + sgroup.Students.Count()
-    }
+    set proxy.students = ..StudentsCount
     
     // Training's cost and currency
     set proxy.cost = ##class(%ZEN.proxyObject).%New()
@@ -416,8 +431,25 @@ Create or save modified training</Description>
         
     set tr.DateFinish = $ZDATEH(data.dateFinish, 15)
     set tr.DateStart = $ZDATEH(data.dateStart, 15)
-    set tr.TimeFinish = ##class(%Library.Time).DisplayToLogical(data.timeFinish)
-    set tr.TimeStart = ##class(%Library.Time).DisplayToLogical(data.timeStart)
+    
+    if (data.timeStartType = "p.m."){
+        set tr.TimeStart = ##class(%Library.Time).DisplayToLogical(data.timeStartType) + ##class(%Library.Time).DisplayToLogical("12:00")
+    }
+    else{
+        set tr.TimeStart = ##class(%Library.Time).DisplayToLogical(data.timeStart)
+    }
+    
+    if (data.timeFinishType = "p.m."){
+        set tr.TimeFinish = ##class(%Library.Time).DisplayToLogical(data.timeFinish) + ##class(%Library.Time).DisplayToLogical("12:00")
+    }
+    else{
+        set tr.TimeFinish = ##class(%Library.Time).DisplayToLogical(data.timeFinish)
+    }
+    
+    if (tr.TimeFinish < tr.TimeStart){
+        set tr.TimeFinish = tr.TimeStart
+    }
+    
     set tr.Room = $ZCONVERT(data.room, "I","UTF8")
     set tr.Latitude = $p(data.address.point, " ", 2)
     set tr.Longitude = $p(data.address.point, " ", 1)
@@ -464,11 +496,13 @@ Create certificates for all students</Description>
     for i=1:1:..SubGroups.Count(){
         set keyGr = ..SubGroups.Next(keyGr)
         set sgroup = ..SubGroups.GetAt(keyGr)
+        
+        set sgroupStudents = sgroup.GetArrayOfStudents()
             
         set keySt = ""
-        for j=1:1:sgroup.Students.Count(){
-            set keySt = sgroup.Students.Next(keySt)
-            set student = sgroup.Students.GetAt(keySt)
+        for j=1:1:sgroupStudents.Count(){
+            set keySt = sgroupStudents.Next(keySt)
+            set student = sgroupStudents.GetAt(keySt)
                 
             do listOfStudents.Insert(student)
         }
@@ -526,11 +560,11 @@ Add person to training, subgroup is detirmining automatically</Description>
     // when student in two different subgroups of one training
     set contains = 0
     &sql(SELECT COUNT(ID) INTO :contains
-         FROM Stc_Data.SubGroup_Students
+         FROM Stc_Data.SubGroupStudent
          WHERE SubGroup IN (SELECT $PIECE(ID,'||',2) 
                             FROM Stc_Data.Training_SubGroups 
                             WHERE Training = :trainingId) 
-                        AND Students = :personId)
+                        AND Student = :personId)
     
      
     if (contains '= 0) quit ##class(Stc.Utils.Msg).GetErrorStatus("personContainsInTraining")
@@ -544,20 +578,17 @@ Add person to training, subgroup is detirmining automatically</Description>
     
     if (sgroupId = ""){
         // If training has no organization's subgroup, create subgroup and add person to it
-        set array = ##class(%ArrayOfObjects).%New()
-        do array.SetAt(person, personId)
-        set sgroup = ##class(Stc.Data.SubGroup).Create(person.Company, array, ..Course, .status)
+        set sgroup = ##class(Stc.Data.SubGroup).Create(person.Company, ..Course, .status)
+        if $$$ISERR(status) quit status
         
+        do ##class(SubGroupStudent).Create(person.%Id(), sgroup.%Id(), .status)
         if $$$ISERR(status) quit status
         
         do ..SubGroups.SetAt(sgroup, sgroup.%Id())
     }
     else{
         // If training has organization's subgroup, just add person to it
-        set group = ..SubGroups.GetAt(sgroupId)
-        do group.Students.SetAt(person, personId)
-        set status = group.%Save()
-        
+        do ##class(Stc.Data.SubGroupStudent).Save(personId, sgroupId, .status)  
         if $$$ISERR(status) quit status
     }
     
@@ -583,13 +614,31 @@ Add person to training, subgroup is detirmining automatically</Description>
     
     set proxy.isCompleted = ..IsCompleted   
     
-    set proxy.timeStart = $e(##class(%Library.Time).LogicalToDisplay(..TimeStart), 1, 5)
-    set proxy.timeFinish = $e(##class(%Library.Time).LogicalToDisplay(..TimeFinish), 1, 5)
+    if (..TimeStart > ##class(%Library.Time).DisplayToLogical("12:00")){
+        set proxy.timeStart = $e(##class(%Library.Time).LogicalToDisplay(..TimeStart - ##class(%Library.Time).DisplayToLogical("12:00")), 1, 5)
+        set proxy.timeStartType = "p.m."
+    }
+    else{
+        set proxy.timeStart = $e(##class(%Library.Time).LogicalToDisplay(..TimeStart), 1, 5)
+        set proxy.timeStartType = "a.m."
+    }
+    
+    if (..TimeFinish > ##class(%Library.Time).DisplayToLogical("12:00")){
+        set proxy.timeFinish = $e(##class(%Library.Time).LogicalToDisplay(..TimeFinish - ##class(%Library.Time).DisplayToLogical("12:00")), 1, 5)
+        set proxy.timeFinishType = "p.m."
+    }
+    else{
+        set proxy.timeFinish = $e(##class(%Library.Time).LogicalToDisplay(..TimeFinish), 1, 5)
+        set proxy.timeFinishType = "a.m."
+    }
+
+    set proxy.timeStartFinish = proxy.timeStart_" "_proxy.timeStartType_" - "_proxy.timeFinish_" "_proxy.timeFinishType
+    
     
     set proxy.otherInfo = ..OtherInfo.Value
     set proxy.room = ..Room
     set proxy.address = ##class(%ZEN.proxyObject).%New()
-    set proxy.address.title = ..Street.Value
+    set proxy.address.title = ..GeoLocationAddress
     set proxy.address.point = ..Longitude_" "_..Latitude
     set proxy.address.lat = ..Latitude
     set proxy.address.lng = ..Longitude
@@ -665,8 +714,8 @@ Add person to training, subgroup is detirmining automatically</Description>
     set contacts = ##class(%ListOfObjects).%New()
     
     &sql(DECLARE TrStudEmCur CURSOR FOR 
-                 SELECT Students As ID, Students->FullName As FullName, Students->Email 
-                 FROM Stc_Data.SubGroup_Students
+                 SELECT Student As ID, Student->FullName As FullName, Student->Email 
+                 FROM Stc_Data.SubGroupStudent
                  WHERE SubGroup IN (SELECT SubGroups FROM Stc_Data.Training_SubGroups WHERE Training = :trId)
                  ORDER BY FullName) 
             
@@ -770,6 +819,20 @@ Get teacher payout for training</Description>
     set resultData.currency = tr.Course.Currency.Name.Value
    
     quit PRound
+]]></Implementation>
+</Method>
+
+<Method name="GetStudentsCount">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>trId:%String</FormalSpec>
+<ReturnType>%Integer</ReturnType>
+<Implementation><![CDATA[
+    set count = 0
+    &SQL(SELECT %NOLOCK COUNT(Student) INTO :count
+         FROM Stc_Data.SubGroupStudent
+         WHERE SubGroup IN (SELECT %NOLOCK SubGroups FROM Stc_Data.Training_SubGroups WHERE Training = :trId))
+    
+    quit count
 ]]></Implementation>
 </Method>
 

@@ -521,7 +521,7 @@ Method="POST" Url="/json/training/:code/student"</Description>
         
         set whereRequired = "SubGroup IN (SELECT SubGroups FROM Stc_Data.Training_SubGroups WHERE Training->AccessCode = '"_..ParseParameter(accessCode)_"')"
         
-        $$$THROWONERROR(status, ..WriteJsonForGrid("SELECT Students FROM Stc_Data.SubGroup_Students", "Stc.Data.Person", params, whereRequired))
+        $$$THROWONERROR(status, ..WriteJsonForGrid("SELECT Student FROM Stc_Data.SubGroupStudent", "Stc.Data.Person", params, whereRequired))
     }
     catch ex {
         set status = ex.AsStatus()

@@ -399,8 +399,8 @@ Send new training registration link to students by training city</Description>
 			&sql(DECLARE MIASCur CURSOR FOR 
 					SELECT AccessCode, Student
 			 		FROM Stc_Data.MailingItemApprovedStudent
-			 		WHERE City = :cityId AND Student NOT IN (SELECT Students 
-			 												 FROM Stc_Data.SubGroup_Students
+			 		WHERE City = :cityId AND Student NOT IN (SELECT Student 
+			 												 FROM Stc_Data.SubGroupStudent
 			 												 WHERE SubGroup IN (SELECT SubGroups
 			 												 					FROM Stc_Data.Training_SubGroups
 			 												 					WHERE Training = :trId)))	

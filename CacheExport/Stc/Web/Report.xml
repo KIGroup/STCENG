@@ -98,16 +98,16 @@ Report, students of training</Description>
         do %response.SetHeader("Content-Disposition","attachment;filename="_fileName)
 
         &sql(DECLARE StudCur CURSOR FOR 
-             SELECT Students->LastName,
-             Students->FirstName,
-             Students->MiddleName,
-             Students->Company->ShortName,
-             Students->Email,
-             Students->Phone,
-             Students->Skype 
-             FROM Stc_Data.SubGroup_Students
+             SELECT Student->LastName,
+             Student->FirstName,
+             Student->MiddleName,
+             Student->Company->ShortName,
+             Student->Email,
+             Student->Phone,
+             Student->Skype 
+             FROM Stc_Data.SubGroupStudent
              WHERE SubGroup IN (SELECT SubGroups FROM Stc_Data.Training_SubGroups WHERE Training->AccessCode = :trainingAccessCode)
-             ORDER BY Students->Company->ShortName) 
+             ORDER BY Student->Company->ShortName) 
         
         &sql(OPEN StudCur)
         for  

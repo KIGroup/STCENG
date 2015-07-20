@@ -6,7 +6,7 @@
 ===========================================================================================*/
 
 controllersModule.controller('CreateTrainingCtrl', function($scope, $routeParams, $location, UtilsSrvc, TrainingSrvc){
-    $scope.training = {data:{timeStart:'10:00', timeFinish: '14:00', orders: []}};
+    $scope.training = {data:{timeStart:'9:00', timeFinish: '12:00', orders: []}};
     
     // Загрузить обучение по ИД и обновить/склонировать поля
     $scope.training.loadData = function(id){
@@ -22,6 +22,8 @@ controllersModule.controller('CreateTrainingCtrl', function($scope, $routeParams
                 $scope.training.data.curator = data.curator;
                 $scope.training.data.timeStart = data.timeStart;
                 $scope.training.data.timeFinish = data.timeFinish;
+                $scope.training.data.timeStartType = data.timeStartType;
+                $scope.training.data.timeFinishType = data.timeFinishType;
                 $scope.training.data.isPublic = data.isPublic == 1;
             },
             function(response){

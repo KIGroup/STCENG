@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="Stc.Data.SubGroupStudent">
+<Description>
+Training subgroup student</Description>
+<Super>%Persistent</Super>
+<TimeCreated>63752,60397.894817</TimeCreated>
+
+<Property name="Student">
+<Type>Person</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="SubGroup">
+<Type>SubGroup</Type>
+<Required>1</Required>
+</Property>
+
+<Index name="CommonKeyIndex">
+<Properties>Student,SubGroup</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="Save">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[stId:%String,grId:%String,&st]]></FormalSpec>
+<ReturnType>Stc.Data.SubGroupStudent</ReturnType>
+<Implementation><![CDATA[
+    set obj = ..%New()
+    set obj.Student = ##class(Person).%OpenId(stId)
+    set obj.SubGroup = ##class(SubGroup).%OpenId(grId)
+    
+    set st = obj.%Save()
+    
+    quit obj
+]]></Implementation>
+</Method>
+
+<Method name="LoadOldData">
+<Description>
+w ##class(Stc.Data.SubGroupStudent).LoadOldData()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+    set st = $$$OK
+    
+    try{
+        TSTART
+        
+        do ..Save("1", "3")
+        do ..Save("2", "5")
+        do ..Save("3", "6")
+        do ..Save("4", "81")
+        do ..Save("5", "1")
+        do ..Save("5", "11")
+        do ..Save("5", "82")
+            
+        TCOMMIT
+    }
+    catch(ex){
+        TROLLBACK
+        set st = ex.AsStatus()
+    }
+    
+    quit st
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^Stc.Data.SubGroupStudentD</DataLocation>
+<DefaultData>SubGroupStudentDefaultData</DefaultData>
+<IdLocation>^Stc.Data.SubGroupStudentD</IdLocation>
+<IndexLocation>^Stc.Data.SubGroupStudentI</IndexLocation>
+<StreamLocation>^Stc.Data.SubGroupStudentS</StreamLocation>
+<Data name="SubGroupStudentDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Student</Value>
+</Value>
+<Value name="3">
+<Value>SubGroup</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

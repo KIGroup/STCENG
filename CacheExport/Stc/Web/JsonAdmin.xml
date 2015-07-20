@@ -1338,7 +1338,7 @@ Method="POST" Url="/json/training/:trId/subgroup"</Description>
         
         set training = ##class(Stc.Data.Training).%OpenId(trId)
         set payer = ##class(Stc.Data.Company).%OpenId(data.payerId)
-        set sgroup = ##class(Stc.Data.SubGroup).Create(payer, ##class(%ArrayOfObjects).%New(), training.Course, .st)
+        set sgroup = ##class(Stc.Data.SubGroup).Create(payer, training.Course, .st)
         if $$$ISERR(st) $$$ThrowStatus(##class(Stc.Utils.Msg).GetErrorStatus("createSubGroup", "| "_st)) 
         
         do training.SubGroups.SetAt(sgroup, sgroup.%Id())
@@ -1499,7 +1499,7 @@ Method="POST" Url="/json/training/student/grid" </Description>
         
         set whereRequired = "SubGroup IN (SELECT SubGroups FROM Stc_Data.Training_SubGroups WHERE Training = '"_..ParseParameter(params.trainingId)_"')"
         
-        $$$THROWONERROR(st, ..WriteJsonForGrid("SELECT Students FROM Stc_Data.SubGroup_Students", "Stc.Data.Person", params, whereRequired))
+        $$$THROWONERROR(st, ..WriteJsonForGrid("SELECT Student FROM Stc_Data.SubGroupStudent", "Stc.Data.Person", params, whereRequired))
     }
     catch ex {
         set st = ex.AsStatus()
@@ -1612,8 +1612,8 @@ Method="GET" Url="/json/training/:trainingId/student/email"</Description>
     set proxy.children = ##class(%ListOfObjects).%New()
     
     &sql(DECLARE StudCur CURSOR FOR 
-             SELECT Students As ID, Students->LastName->Value As LastName, Students->Email 
-             FROM Stc_Data.SubGroup_Students
+             SELECT Student As ID, Student->LastName->Value As LastName, Student->Email 
+             FROM Stc_Data.SubGroupStudent
              WHERE SubGroup IN (SELECT SubGroups FROM Stc_Data.Training_SubGroups WHERE Training = :trainingId)
              ORDER BY LastName) 
         
@@ -1662,9 +1662,10 @@ Create / add student into subgroup of training</Description>
         }
         
         if (data.group.id){
-            set group = ##class(Stc.Data.SubGroup).%OpenId(data.group.id)
-            $$$THROWONERROR(st, group.Students.SetAt(student, student.%Id()))
-            $$$THROWONERROR(st, group.%Save())
+            do ##class(Stc.Data.SubGroupStudent).Save(student.%Id(), data.group.id, .st)
+            if $$$ISERR(st){
+                $$$ThrowStatus(st)
+            }
         }
         else{
             set training = ##class(Stc.Data.Training).%OpenId(data.training.id)
@@ -1703,11 +1704,11 @@ Method="DELETE" Url="/json/training/:trainingId/student/:studentId"</Description
     set sgroupId = 0
     
     &sql(SELECT SubGroup INTO :sgroupId
-         FROM Stc_Data.SubGroup_Students
+         FROM Stc_Data.SubGroupStudent
          WHERE SubGroup IN (SELECT SubGroups 
                             FROM Stc_Data.Training_SubGroups 
                             WHERE Training = :trainingId) 
-                        AND Students = :studentId)
+                        AND Student = :studentId)
     
     set st = ..DeleteSubGroupStudent(sgroupId, studentId)
 
@@ -1733,10 +1734,7 @@ Method="DELETE" Url="/json/training/subgroup/:sgroupId/student/:studentId"</Desc
         // Check privilege for Person table
         $$$THROWONERROR(st, ##class(Stc.Data.Person).CheckDeletePrivilege())
         
-        set sgroup = ##class(Stc.Data.SubGroup).%OpenId(sgroupId, , .st)
-        $$$THROWONERROR(st, st)
-        do sgroup.Students.RemoveAt(studentId)
-        set st = sgroup.%Save()
+        do ##class(Stc.Data.SubGroupStudent).CommonKeyIndexDelete(studentId, sgroupId,,.st)
         if $$$ISERR(st) $$$ThrowStatus(##class(Stc.Utils.Msg).GetErrorStatus("saveSubGroup", " | "_st))
         
         TCOMMIT     
@@ -2107,7 +2105,7 @@ Method="GET" Url="/json/person/free/subgroup/:sgId/student/:word"</Description>
 <FormalSpec>sgroupId:%String,word:%String</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-    set where = "id NOT IN (SELECT Students FROM Stc_Data.SubGroup_Students WHERE SubGroup = "_..ParseParameter(sgroupId)_") AND"
+    set where = "id NOT IN (SELECT Student FROM Stc_Data.SubGroupStudent WHERE SubGroup = "_..ParseParameter(sgroupId)_") AND"
     
     quit ..GetPersonBySearchParameters(word, where)
 ]]></Implementation>
@@ -2121,7 +2119,7 @@ Method="GET" Url="/json/person/free/training/:trId/student/:word"</Description>
 <FormalSpec>trainingId:%String,word:%String</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-    set where = "id NOT IN (SELECT Students FROM Stc_Data.SubGroup_Students WHERE SubGroup IN (SELECT SubGroups FROM Stc_Data.Training_SubGroups WHERE Training = '"_..ParseParameter(trainingId)_"')) AND"
+    set where = "id NOT IN (SELECT Student FROM Stc_Data.SubGroupStudent WHERE SubGroup IN (SELECT SubGroups FROM Stc_Data.Training_SubGroups WHERE Training = '"_..ParseParameter(trainingId)_"')) AND"
     
     quit ..GetPersonBySearchParameters(word, where)
 ]]></Implementation>
@@ -2144,7 +2142,7 @@ Method="GET" Url="/json/person/:id/training"</Description>
     "Training->TimeFinish As timeFinish, "_
     "Training->isCompleted As isCompleted "_
     "FROM Stc_Data.Training_SubGroups "_
-    "WHERE SubGroups IN (SELECT SubGroup FROM Stc_Data.SubGroup_Students WHERE Students = "_..ParseParameter(id)_") "_
+    "WHERE SubGroups IN (SELECT SubGroup FROM Stc_Data.SubGroupStudent WHERE Student = "_..ParseParameter(id)_") "_
     "ORDER BY isCompleted, dateFinish"
     
     quit ..WriteJsonFromSql(sql)

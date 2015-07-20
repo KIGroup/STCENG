@@ -62,7 +62,7 @@
                 </tr>
                 <tr>
                     <td ng-bind="' '" style="width: 5%; border-top: none;"></td>
-                    <td ng-bind="('Время'|localize) + ': ' + tr.timeStart + ' - ' + tr.timeFinish" style="border-top: none;"></td> 
+                    <td ng-bind="('Время'|localize) + ': ' + tr.timeStartFinish" style="border-top: none;"></td> 
                 </tr>
                 <tr>
                     <td ng-bind="' '" style="width: 5%; border-top: none;"></td>
