@@ -163,15 +163,50 @@ controllersModule.controller('TrainingCtrl', function($scope, $route, $location,
 
         //============================== ВСЕ СТУДЕНТЫ ==========================================================================
         $scope.allstud.columns = [
-                          {name: 'Фамилия', sqlName: 'Student->LastName->Value', isSorted: false, isSortable: true, isDown: true, isSearched: true, isSearchable: true},
-                          {name: 'Имя', sqlName: 'Student->FirstName->Value', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: false},
-                          {name: 'Отчество', sqlName: 'Student->MiddleName->Value', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: false},
+                          {name: 'ФИО', sqlName: 'FullName', isSorted: false, isSortable: true, isDown: true, isSearched: true, isSearchable: true},
                           {name: 'Организация', sqlName: 'Student->Company->ShortName->Value', isSorted: true, isSortable: true, isDown: true, isSearched: false, isSearchable: true},
                           {name: 'Email', sqlName: 'Student->Email', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: true},
                           {name: 'Телефон', sqlName: 'Student->Phone', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: true},
-                          {name: 'Skype', sqlName: 'Student->Skype', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: false}];
+                          {name: 'Skype', sqlName: 'Student->Skype', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: false},
+                          {name: 'Attendance status', sqlName: '', isSorted: false, isSortable: false, isDown: true,  isSearched: false,  isSearchable: false, captionStyle: {textAlign: 'center', width: '150px'}}];
 
-        $scope.allstud.properties = [{name:'lastName'}, {name:'firstName'}, {name:'middleName'}, {name:'company.shortName'}, {name:'email'}, {name:'phone'}, {name:'skype'}];
+        $scope.allstud.properties = [
+            {name:'lastName',
+                calculate: function(item){
+                    item.fullName = $scope.getFullNameForCurLang(item.lastName, item.firstName, item.middleName);
+                },}, 
+            {name:'company.shortName'}, 
+            {name:'email'}, 
+            {name:'phone'}, 
+            {name:'skype'},
+            {name:'attendedStatus',
+               cellSelectable: true,
+               cellStyle: {textAlign: 'center'},
+               getCssClass: function(item){
+                    if (item.attendedStatusCode == 'Visited'){
+                         return 'icon icon-check';
+                    }
+                    else if (item.attendedStatusCode == 'NotVisited'){
+                         return 'icon icon-check-empty';
+                    } 
+                    
+                    return 'icon icon-question';
+               },
+               onClickCell: function(item){
+                   var newCode = 'Visited';
+                   if (item.attendedStatusCode == 'Visited')
+                        newCode = 'NotVisited'
+                   
+                   TrainingSrvc.updateStudentAttendedStatus($scope.training.data.accessCode, item.id, newCode).then(
+                        function(data){
+                            $scope.allstud.forciblyUpdate++;
+                        },
+                        function(response){
+                            $scope.other.alert = UtilsSrvc.getAlert('Внимание!', response.data, 'error', true);
+                        });
+               }}
+        ];
+            
         $scope.allstud.pageSize = 15;
         $scope.allstud.pageCurr = 1;
         $scope.allstud.itemsTotal = 0;
@@ -698,7 +733,16 @@ controllersModule.controller('TrainingCtrl', function($scope, $route, $location,
         UtilsSrvc.openMessageBox('Удалить слушателя', $filter('localize')("Удалить слушателя") + ' ' + item.lastName + "?", deleteTrainingStudent);   
     };
 
+    $scope.allstud.onSelect = function(item){     
+        
+    };
 
+    $scope.allstud.onSelectCell = function(item, property){
+        if (!item) return;
+
+        property.onClickCell(item);
+    };
+    
     $scope.allstud.selectTab = function(){
         if (!$scope.allstud.items || $scope.allstud.items.length==0)
             $scope.allstud.forciblyUpdate++;

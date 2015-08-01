@@ -258,6 +258,31 @@ Create or save modified course</Description>
 ]]></Implementation>
 </Method>
 
+<Method name="Test">
+<ClassMethod>1</ClassMethod>
+<Implementation><![CDATA[
+    set cd = ##class(%Dictionary.ClassDefinition).%OpenId(##class(Stc.Data.Course).%ClassName(1))
+    for i = 1:1:cd.Storages.Count(){
+        #dim storage As %Dictionary.StorageDefinition = cd.Storages.GetAt(i)
+        w !,"storage.DataLocation="_storage.DataLocation
+        w !,"storage.Name="_storage.Name_"; storage.SequenceNumber="_storage.SequenceNumber
+        
+        for d = 1:1:storage.Data.Count(){
+            #dim data As %Dictionary.StorageDataDefinition = storage.Data.GetAt(d)
+            w !,"data.Structure="_data.Structure
+            w !,!,"Data="_data.Name
+            
+            for v = 1:1:data.Values.Count(){
+                #dim value As %Dictionary.StorageDataValueDefinition = data.Values.GetAt(v)
+                w !,!,"Value.Name ="_value.Name_"; Value.Value="_value.Value
+            
+            
+            }   
+        }
+    }
+]]></Implementation>
+</Method>
+
 <Storage name="Default">
 <Type>%Library.CacheStorage</Type>
 <DataLocation>^Stc.Data.CourseD</DataLocation>

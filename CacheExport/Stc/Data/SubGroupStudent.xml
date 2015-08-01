@@ -16,19 +16,36 @@ Training subgroup student</Description>
 <Required>1</Required>
 </Property>
 
+<Property name="Training">
+<Type>Training</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="AttendedStatusCode">
+<Type>%String</Type>
+<InitialExpression>"Unknown"</InitialExpression>
+<Parameter name="VALUELIST" value="&apos;Unknown&apos;,&apos;Visited&apos;,&apos;NotVisited&apos;"/>
+</Property>
+
 <Index name="CommonKeyIndex">
 <Properties>Student,SubGroup</Properties>
 <Unique>1</Unique>
 </Index>
 
+<Index name="TrainingStudentIndex">
+<Properties>Training,Student</Properties>
+<Unique>1</Unique>
+</Index>
+
 <Method name="Save">
 <ClassMethod>1</ClassMethod>
-<FormalSpec><![CDATA[stId:%String,grId:%String,&st]]></FormalSpec>
+<FormalSpec><![CDATA[stId:%String,grId:%String,trId:%String,&st]]></FormalSpec>
 <ReturnType>Stc.Data.SubGroupStudent</ReturnType>
 <Implementation><![CDATA[
     set obj = ..%New()
     set obj.Student = ##class(Person).%OpenId(stId)
     set obj.SubGroup = ##class(SubGroup).%OpenId(grId)
+    set obj.Training = ##class(Training).%OpenId(trId)
     
     set st = obj.%Save()
     
@@ -36,33 +53,37 @@ Training subgroup student</Description>
 ]]></Implementation>
 </Method>
 
-<Method name="LoadOldData">
+<Method name="FixOldData">
 <Description>
-w ##class(Stc.Data.SubGroupStudent).LoadOldData()</Description>
+do ##class(Stc.Data.SubGroupStudent).FixOldData()</Description>
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-    set st = $$$OK
-    
-    try{
-        TSTART
+    &sql(DECLARE SGSCur CURSOR FOR 
+             SELECT ID, SubGroup
+             FROM Stc_Data.SubGroupStudent)
         
-        do ..Save("1", "3")
-        do ..Save("2", "5")
-        do ..Save("3", "6")
-        do ..Save("4", "81")
-        do ..Save("5", "1")
-        do ..Save("5", "11")
-        do ..Save("5", "82")
-            
-        TCOMMIT
+    &sql(OPEN SGSCur)
+    for  
+    {   
+        &sql(FETCH SGSCur INTO :id, :subGroupId) 
+        quit:(SQLCODE '= 0)
+        
+        set obj = ..%OpenId(id)
+        &sql(SELECT Training INTO :trId
+             FROM Stc_Data.Training_SubGroups
+             WHERE SubGroups = :subGroupId)
+       
+        w !,"trId="_trId_"; subGroupId="_subGroupId
+        set obj.Training = ##class(Training).%OpenId(trId)
+        set st = obj.%Save()
+        if $$$ISERR(st){
+            w !,$SYSTEM.Status.GetErrorText(st)
+            quit
+        }
     }
-    catch(ex){
-        TROLLBACK
-        set st = ex.AsStatus()
-    }
-    
-    quit st
+       
+    &sql(CLOSE SGSCur)
 ]]></Implementation>
 </Method>
 
@@ -82,6 +103,12 @@ w ##class(Stc.Data.SubGroupStudent).LoadOldData()</Description>
 </Value>
 <Value name="3">
 <Value>SubGroup</Value>
+</Value>
+<Value name="4">
+<Value>AttendedStatusCode</Value>
+</Value>
+<Value name="5">
+<Value>Training</Value>
 </Value>
 </Data>
 </Storage>

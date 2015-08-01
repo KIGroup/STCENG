@@ -1499,7 +1499,17 @@ Method="POST" Url="/json/training/student/grid" </Description>
         
         set whereRequired = "SubGroup IN (SELECT SubGroups FROM Stc_Data.Training_SubGroups WHERE Training = '"_..ParseParameter(params.trainingId)_"')"
         
-        $$$THROWONERROR(st, ..WriteJsonForGrid("SELECT Student FROM Stc_Data.SubGroupStudent", "Stc.Data.Person", params, whereRequired))
+        set gridData = ..GetJsonForGrid("SELECT Student FROM Stc_Data.SubGroupStudent", "Stc.Data.Person", params, whereRequired)
+        $$$THROWONERROR(st, st)
+        
+        for i=1:1:gridData.children.items.Count(){
+            set studentProxy = gridData.children.items.GetAt(i)
+            
+            #dim stGrData As Stc.Data.SubGroupStudent = ##class(Stc.Data.SubGroupStudent).TrainingStudentIndexOpen(params.trainingId, studentProxy.id)
+            set studentProxy.attendedStatusCode = stGrData.AttendedStatusCode
+        }
+        
+        do gridData.%ToJSON()
     }
     catch ex {
         set st = ex.AsStatus()
@@ -1662,7 +1672,7 @@ Create / add student into subgroup of training</Description>
         }
         
         if (data.group.id){
-            do ##class(Stc.Data.SubGroupStudent).Save(student.%Id(), data.group.id, .st)
+            do ##class(Stc.Data.SubGroupStudent).Save(student.%Id(), data.group.id, data.training.id, .st)
             if $$$ISERR(st){
                 $$$ThrowStatus(st)
             }

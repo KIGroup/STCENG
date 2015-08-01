@@ -441,6 +441,7 @@ do ##class(Stc.Utils.Msg).DeepSeeMsg()</Description>
     // Курсы
     do ..AddDeepSeeMsg("Курсы и слушатели", "Courses and attendees")
     do ..AddDeepSeeMsg("Количество слушателей по курсам за все годы", "Number of attendees by courses for all years")
+    do ..AddDeepSeeMsg("Количество слушателей по курсам", "Number of attendees by courses")
     
     do ..AddDeepSeeMsg("Курсы и обучения", "Courses and trainings")
     do ..AddDeepSeeMsg("Количество обучений по курсам за все годы", "Number of trainings by courses for all years")

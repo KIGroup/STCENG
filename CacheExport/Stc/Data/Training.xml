@@ -588,7 +588,7 @@ Add person to training, subgroup is detirmining automatically</Description>
     }
     else{
         // If training has organization's subgroup, just add person to it
-        do ##class(Stc.Data.SubGroupStudent).Save(personId, sgroupId, .status)  
+        do ##class(Stc.Data.SubGroupStudent).Save(personId, sgroupId, ..%Id(), .status)  
         if $$$ISERR(status) quit status
     }
     

@@ -107,6 +107,9 @@ Public request processor for users</Description>
     <!-- Get feed Backs of trainings BY AccessCode-->
     <Route Method="POST" Url="/json/training/:id/question" Call="Stc.Web.JsonUser:CreateTrainingQuestion"/>   
     
+    <!-- Update training students attended state BY AccessCode-->
+    <Route Method="POST" Url="/json/training/:trainingAccessCode/student/udpateStatus" Call="Stc.Web.JsonUser:UpdateTrainingStudentAttendedStatus"/>   
+    
 </Routes>
 ]]></Data>
 </XData>

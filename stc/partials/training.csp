@@ -134,6 +134,9 @@
                     second-row-action-title="'Удалить слушателя'|localize"
                     second-row-action-method="allstud.remove(item)"
                         
+                    on-select="allstud.onSelect(item)"
+                    on-select-cell="allstud.onSelectCell(item, property)"
+                        
                     forcibly-update="allstud.forciblyUpdate"
                 />
             </tab>

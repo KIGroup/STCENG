@@ -206,6 +206,9 @@ servicesModule.factory('TrainingSrvc', function(DALSrvc, $filter) {
         getTeacherPayout: function(trainingId, teacherId){
             return DALSrvc.getPromise('get', StcAppSetting.admin + '/json/training/' + trainingId + '/teacher/' + teacherId + '/payout', null);
         },
+        updateStudentAttendedStatus: function(accessCode, studentId, statusCode){
+            return DALSrvc.getPromise('save', StcAppSetting.user + '/json/training/' + accessCode + '/student/udpateStatus', {studentId : studentId, statusCode: statusCode});
+        },
         getUrlForCreateGoogleCalendarEvent: function(text, dates, location, details){
                 return 'https://www.google.com/calendar/render?action=TEMPLATE&hl=ru' + 
                                         '&text=' + text +
