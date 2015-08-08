@@ -321,25 +321,33 @@ Convert to proxyObject (for JSON)</Description>
     set proxy.isCertificatesDone = ..IsCertificatesDone
     set proxy.isPublic = ..IsPublic
     
-    if (..TimeStart > ##class(%Library.Time).DisplayToLogical("12:00")){
-        set proxy.timeStart = $e(##class(%Library.Time).LogicalToDisplay(..TimeStart - ##class(%Library.Time).DisplayToLogical("12:00")), 1, 5)
-        set proxy.timeStartType = "p.m."
-    }
-    else{
-        set proxy.timeStart = $e(##class(%Library.Time).LogicalToDisplay(..TimeStart), 1, 5)
-        set proxy.timeStartType = "a.m."
+    set proxy.timeStart = $e(##class(%Library.Time).LogicalToDisplay(..TimeStart), 1, 5)
+    set proxy.timeStartType = "24"
+    set proxy.timeFinish = $e(##class(%Library.Time).LogicalToDisplay(..TimeFinish), 1, 5)
+    set proxy.timeFinishType = "24"
+    
+    if ($FIND($$$SessionLanguage, "ru") = 0){
+        if (..TimeStart > ##class(%Library.Time).DisplayToLogical("12:00")){
+            set proxy.timeStart = $e(##class(%Library.Time).LogicalToDisplay(..TimeStart - ##class(%Library.Time).DisplayToLogical("12:00")), 1, 5)
+            set proxy.timeStartType = "p.m."
+        }
+        else{
+            set proxy.timeStart = $e(##class(%Library.Time).LogicalToDisplay(..TimeStart), 1, 5)
+            set proxy.timeStartType = "a.m."
+        }
+        
+        if (..TimeFinish > ##class(%Library.Time).DisplayToLogical("12:00")){
+            set proxy.timeFinish = $e(##class(%Library.Time).LogicalToDisplay(..TimeFinish - ##class(%Library.Time).DisplayToLogical("12:00")), 1, 5)
+            set proxy.timeFinishType = "p.m."
+        }
+        else{
+            set proxy.timeFinish = $e(##class(%Library.Time).LogicalToDisplay(..TimeFinish), 1, 5)
+            set proxy.timeFinishType = "a.m."
+        }
+        
+        set proxy.timeStartFinish = proxy.timeStart_" "_proxy.timeStartType_" - "_proxy.timeFinish_" "_proxy.timeFinishType
     }
     
-    if (..TimeFinish > ##class(%Library.Time).DisplayToLogical("12:00")){
-        set proxy.timeFinish = $e(##class(%Library.Time).LogicalToDisplay(..TimeFinish - ##class(%Library.Time).DisplayToLogical("12:00")), 1, 5)
-        set proxy.timeFinishType = "p.m."
-    }
-    else{
-        set proxy.timeFinish = $e(##class(%Library.Time).LogicalToDisplay(..TimeFinish), 1, 5)
-        set proxy.timeFinishType = "a.m."
-    }
-
-    set proxy.timeStartFinish = proxy.timeStart_" "_proxy.timeStartType_" - "_proxy.timeFinish_" "_proxy.timeFinishType
     
     set proxy.otherInfo = ..OtherInfo.Value
     set proxy.room = ..Room
@@ -492,21 +500,24 @@ Create certificates for all students</Description>
 <Implementation><![CDATA[
     set listOfStudents = ##class(%ListOfObjects).%New()
     
-    set keyGr = ""
-    for i=1:1:..SubGroups.Count(){
-        set keyGr = ..SubGroups.Next(keyGr)
-        set sgroup = ..SubGroups.GetAt(keyGr)
+    set trId = ..%Id()
+    
+    &sql(DECLARE TrCur CURSOR FOR 
+             SELECT Student
+             FROM Stc_Data.SubGroupStudent
+             WHERE Training = :trId AND AttendedStatusCode <> 'NotVisited') 
         
-        set sgroupStudents = sgroup.GetArrayOfStudents()
-            
-        set keySt = ""
-        for j=1:1:sgroupStudents.Count(){
-            set keySt = sgroupStudents.Next(keySt)
-            set student = sgroupStudents.GetAt(keySt)
-                
-            do listOfStudents.Insert(student)
-        }
+    &sql(OPEN TrCur)
+    for  
+    {   
+        &sql(FETCH TrCur INTO :stId) 
+        quit:(SQLCODE '= 0)
+        
+        set student = ##class(Person).%OpenId(stId)
+        do listOfStudents.Insert(student)
     }
+        
+    &sql(CLOSE TrCur)
     
     quit ##class(Stc.Data.Certificate).CreateAll($this, listOfStudents)
 ]]></Implementation>
@@ -672,7 +683,7 @@ Add person to training, subgroup is detirmining automatically</Description>
         */
         
         set pattern = ##class(Stc.Utils.Msg).GetMsg("CalendarEvent")
-        set urlJoin = ##class(Stc.Data.Settings).GetWebAppDomain()_"/stc/index.csp#/training/"_tr.%Id()_"/order" 
+        set urlJoin = ##class(Stc.Data.Settings).GetWebAppDomainNamespace()_"/stc/index.csp#/training/"_tr.%Id()_"/order" 
         set urlCourse = tr.Course.ProgramUrl
         set cityFullName = tr.City.Name.Value_", "_tr.City.ParentRegion.Name.Value_", "_tr.City.ParentRegion.ParentRegion.Name.Value
         set street = tr.Street.Value

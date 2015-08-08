@@ -173,8 +173,10 @@
                         
                     forcibly-update="cert.forciblyUpdate"
                 />
-                <button type="button" ng-hide="menu.readOnlyMode" class="btn btn-small btn-primary" ng-click="cert.createAll()" ng-bind="'Обновить'|localize" title="{{'Создание сертификатов для слушателей (если еще не созданы)'|localize}}"></button>
-                <button type="button" ng-hide="menu.readOnlyMode" class="btn btn-small btn-success" ng-click="cert.exportToCSV()" ng-bind="'Экспорт'|localize" title="{{'Экспорт всех сертификатов в файл *.csv'|localize}}"></button>
+                <button type="button" ng-hide="menu.readOnlyMode" class="btn btn-small" ng-click="cert.createAll()" title="{{'Создание сертификатов для слушателей (если еще не созданы)'|localize}}"><i class="icon-refresh"></i>&nbsp;&nbsp;{{'Обновить / пересоздать'|localize}}</button>
+                <button type="button" ng-hide="menu.readOnlyMode" class="btn btn-small" ng-click="cert.exportToCSV()" title="{{'Экспорт всех сертификатов в файл *.csv'|localize}}"><i class="icon-download-alt"></i>&nbsp;&nbsp;{{'Экспорт сертификатов'|localize}}</button>
+                <button type="button" ng-hide="menu.readOnlyMode" class="btn btn-small" ng-click="cert.sendToOffice()" title="{{'Отправить сертификаты'|localize}}"><i class="icon-envelope"></i>&nbsp;&nbsp;{{'Отправить в офис'|localize}}</button>
+                
             </tab>
              <!-- ============================================ ОТЗЫВЫ ==================================================-->
             <tab heading="{{('Отзывы'|localize) + ' (' + training.data.feedBacks.count + ')'}}" select="feedBack.selectTab()" active="pageStore.training.tabFeedBacksActive">

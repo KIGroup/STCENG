@@ -110,6 +110,9 @@ Public request processor for users</Description>
     <!-- Update training students attended state BY AccessCode-->
     <Route Method="POST" Url="/json/training/:trainingAccessCode/student/udpateStatus" Call="Stc.Web.JsonUser:UpdateTrainingStudentAttendedStatus"/>   
     
+     <!-- Report, certificates of training -->
+    <Route Method="GET" Url="/text/:lang/certificates/:trainingAccessCode" Call="Stc.Web.Report:Certificates"/>
+    
 </Routes>
 ]]></Data>
 </XData>

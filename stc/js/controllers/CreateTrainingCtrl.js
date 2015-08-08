@@ -7,6 +7,16 @@
 
 controllersModule.controller('CreateTrainingCtrl', function($scope, $routeParams, $location, UtilsSrvc, TrainingSrvc){
     $scope.training = {data:{timeStart:'9:00', timeFinish: '12:00', orders: []}};
+    if ($scope.menu.lang.id == 'ru-RU'){
+        $scope.training.data.timeStartType = '24';
+        $scope.training.data.timeFinishType = '24';
+        $scope.training.data.timePattern = '([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]';
+    }
+    else{
+        $scope.training.data.timeStartType = 'a.m.';
+        $scope.training.data.timeFinishType = 'p.m.';
+        $scope.training.data.timePattern = '([0-9]|0[0-9]|1[0-2]|2[0-2]):[0-5][0-9]';
+    }
     
     // Загрузить обучение по ИД и обновить/склонировать поля
     $scope.training.loadData = function(id){

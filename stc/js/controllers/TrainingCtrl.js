@@ -551,6 +551,21 @@ controllersModule.controller('TrainingCtrl', function($scope, $route, $location,
     $scope.cert.exportToCSV = function(){
         ReportSrvc.certificates($scope.training.data.id);
     };
+    
+    // Отправка в офис
+    $scope.cert.sendToOffice = function(){
+        function send(){
+            CertificateSrvc.sendToOffice($scope.training.data.id).then(
+            function(data){
+                $scope.other.alert = UtilsSrvc.getAlert('Готово!', 'Письма добавлены в очередь, проверьте журнал рассылок', 'success', true);
+            },
+            function(response){
+                $scope.other.alert = UtilsSrvc.getAlert('Внимание!', response.data, 'error', true);
+            });
+        };
+
+        UtilsSrvc.openMessageBox('Рассылка писем', $filter('localize')("Выполнить рассылку списка сертификатов участникам группы \"Офис\" ?"), send);  
+    };
 
     // Создать все сертификаты
     $scope.cert.createAll = function(){

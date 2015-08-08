@@ -2,6 +2,7 @@
 
 localizationModule.constant('StcDictionary', {
   strings: {
+    'Сохранение завершено' : 'Changes have been saved',
     'Ваш отзыв принят. Спасибо!':'Thanks for your feedback!',
     'Создание организации':'Creation of organization',
     'ссылка на отмену подписки' : 'link to unsubscribe',

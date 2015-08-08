@@ -60,16 +60,14 @@
             <div class="control-group">
                 <label class="control-label" ng-bind="('Start / end time'|localize) + '*'"></label>
                 <div class="controls">
-                    <div class="input-append" ng-init="training.timeStartType='a.m.'">
-                        <input class="input" style="width: 50px;" type="text" placeholder="{{'ЧЧ:MM'|localize}}" title="{{'Время начала'|localize}}" pattern="([0-9]|0[0-9]|1[0-2]|2[0-2]):[0-5][0-9]" ng-model="training.timeStart" required></input>
-                        <button class="btn" type="button" ng-show="training.timeStartType=='a.m.'" ng-click="training.timeStartType='p.m.'" style="padding-left: 4px; padding-right: 4px;">a.m.</button>
-                        <button class="btn" type="button" ng-show="training.timeStartType=='p.m.'" ng-click="training.timeStartType='a.m.'" style="padding-left: 4px; padding-right: 4px;">p.m.</button>
+                    <div class="input-append">
+                        <input class="input" style="width: 50px;" type="text" placeholder="{{'ЧЧ:MM'|localize}}" title="{{'Время начала'|localize}}" pattern="{{training.timePattern}}" ng-model="training.timeStart" required></input>
+                        <button class="btn" type="button" ng-click="changeTimeMode('timeStartType');" style="padding-left: 4px; padding-right: 4px; color: #7E827F;">{{training.timeStartType}}</button>
                     </div>
                     <!--&nbsp;&nbsp;-->
-                    <div class="input-append" ng-init="training.timeFinishType='a.m.'">
-                        <input class="input" style="width: 50px;" type="text" placeholder="{{'ЧЧ:MM'|localize}}" title="{{'Время окончания'|localize}}" pattern="([0-9]|0[0-9]|1[0-2]|2[0-2]):[0-5][0-9]" ng-model="training.timeFinish" required></input>
-                        <button class="btn" type="button" ng-show="training.timeFinishType=='a.m.'" ng-click="training.timeFinishType='p.m.'" style="padding-left: 4px; padding-right: 4px;">a.m.</button>
-                        <button class="btn" type="button" ng-show="training.timeFinishType=='p.m.'" ng-click="training.timeFinishType='a.m.'" style="padding-left: 4px; padding-right: 4px;">p.m.</button>
+                    <div class="input-append">
+                        <input class="input" style="width: 50px;" type="text" placeholder="{{'ЧЧ:MM'|localize}}" title="{{'Время окончания'|localize}}" pattern="{{training.timePattern}}" ng-model="training.timeFinish" required></input>
+                        <button class="btn" type="button" ng-click="changeTimeMode('timeFinishType');" style="padding-left: 4px; padding-right: 4px; color: #7E827F;">{{training.timeFinishType}}</button>
                     </div>
                     
                 </div>

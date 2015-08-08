@@ -1945,6 +1945,34 @@ Method="DELETE" Url="/json/certificate/:number"</Description>
 ]]></Implementation>
 </Method>
 
+<Method name="SendCertificatesToOffice">
+<Description>
+Send certificates to office
+Method="POST" Url="/json/traiing/:id/certificate/sendToOffice"</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>trainingId:%String</FormalSpec>
+<Implementation><![CDATA[
+    // Check privilege for Person table
+    set st = ##class(Stc.Data.Person).CheckDeletePrivilege()
+    quit:$$$ISERR(st) st
+    
+    set mGroup = ##class(Stc.Data.MailingGroup).GetOfficeGroup()    
+    set mail = ##class(Stc.Data.MailingGroup).GetMail(mGroup.%Id(), trainingId)
+    
+    set contacts = ##class(Stc.Data.MailingGroup).GetMailingItemsContacts(mGroup.%Id())
+    set grNumber = ##class(Stc.Data.MailingJournal).GetValidGroupNumber()
+    
+    for i=1:1:contacts.Count(){
+        set mItem = ##class(Stc.Data.MailingItemApproved).%OpenId(contacts.GetAt(i).id)
+        if '$ISOBJECT(mItem) continue
+            
+        do ##class(Stc.Data.MailingJournal).Create(contacts.GetAt(i).email, contacts.GetAt(i).name, mail.subject, mail.message, mGroup.Name, grNumber)  
+    }
+    
+    quit st
+]]></Implementation>
+</Method>
+
 <Method name="SavePerson">
 <Description>
 
@@ -2570,6 +2598,9 @@ Method="GET" Url="/json/settings/mail/preview/:type"</Description>
         elseif (type = "listOfFeedbacks"){
             set mail = ##class(Stc.Utils.Email).GetMailForListOfTrainingFeedBacks(tr)
         }
+        elseif (type = "teacherSetAttendeeStatus"){
+            set mail = ##class(Stc.Utils.Email).GetMailForTrainingTeacherSetAttendeeStatus(tr)
+        }
         
         set proxy = ##class(%ZEN.proxyObject).%New()
         set proxy.preview = mail.subject_"<br><br>"_mail.message
@@ -2843,7 +2874,7 @@ Method="GET" Url="/json/mailing/group/:id/mail"</Description>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
     set trId = ""
-    &sql(SELECT TOP 1 ID INTO :trId FROM Stc_Data.Training ORDER BY ID DESC)
+    &sql(SELECT TOP 1 Training INTO :trId FROM Stc_Data.Certificate ORDER BY ID DESC)
     
     quit ##class(Stc.Data.MailingGroup).GetMail(grId , trId).%ToJSON()
 ]]></Implementation>
@@ -2870,7 +2901,7 @@ Method="POST" Url="/json/mailing/mail/send"</Description>
             set mItem = ##class(Stc.Data.MailingItemApproved).%OpenId(data.contacts.GetAt(i).id)
             if '$ISOBJECT(mItem) continue
                     
-            set msg = $REPLACE(data.message, "%UnsubscribeUrl", "http://"_##class(Stc.Data.Settings).GetWebAppDomain()_"/stc/index.csp#/mailing/subscription/"_$system.Encryption.Base64Encode(mItem.AccessCode))
+            set msg = $REPLACE(data.message, "%UnsubscribeUrl", "http://"_##class(Stc.Data.Settings).GetWebAppDomainNamespace()_"/stc/index.csp#/mailing/subscription/"_$system.Encryption.Base64Encode(mItem.AccessCode))
             do ##class(Stc.Data.MailingJournal).Create(data.contacts.GetAt(i).email, $ZCVT(data.contacts.GetAt(i).name, "I", "UTF8"), data.subject, msg, "ГР: "_mItem.MGroup.Name, grNumber)    
         }
         
